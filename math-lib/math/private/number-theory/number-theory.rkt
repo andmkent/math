@@ -195,7 +195,8 @@
     ; TODO: Only store odd integers in this table
     (define N *VERY-SMALL-PRIME-LIMIT*)
     (define ps (make-vector (+ N 1) #t))
-    (define ! vector-set!)
+    (define-syntax-rule (! . args)
+      (vector-set! . args))
     (! ps 0 #f)
     (! ps 1 #f)
     (for ([n (in-range 2 (+ N 1))])

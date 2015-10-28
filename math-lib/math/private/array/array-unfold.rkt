@@ -48,6 +48,6 @@
            ;(define dks (remove-duplicates (array->list (array-map vector-length arr))))
            (define dk (array-all-min (array-map vector-length arr)))
            (array-default-strict
-            (unsafe-array-axis-expand arr k dk (inst unsafe-vector-ref A))))]
+            (unsafe-array-axis-expand arr k dk (inst vector-ref A))))]
         [else
          (raise-argument-error 'list-array->array (format "Index <= ~a" dims) 1 arr k)]))
