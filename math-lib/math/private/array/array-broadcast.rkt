@@ -61,36 +61,6 @@
       v
       (error 'append-length-error)))
 
-(: shape-permissive-broadcast (Indexes Indexes Index (-> Nothing) -> Indexes))
-(define (shape-permissive-broadcast ds1 ds2 dims fail)
-  (define: new-ds : Indexes (make-vector dims 0))
-  (let loop ([#{k : Nonnegative-Fixnum} 0])
-    (cond [(k . < . dims)
-           (define dk1 (unsafe-vector-ref ds1 k))
-           (define dk2 (unsafe-vector-ref ds2 k))
-           (unsafe-vector-set!
-            new-ds k
-            (cond [(or (= dk1 0) (= dk2 0))  (fail)]
-                  [else  (fxmax dk1 dk2)]))
-           (loop (+ k 1))]
-          [else  new-ds])))
-
-(: shape-normal-broadcast (Indexes Indexes Index (-> Nothing) -> Indexes))
-(define (shape-normal-broadcast ds1 ds2 dims fail)
-  (define: new-ds : Indexes (make-vector dims 0))
-  (let loop ([#{k : Nonnegative-Fixnum} 0])
-    (cond [(k . < . dims)
-           (define dk1 (unsafe-vector-ref ds1 k))
-           (define dk2 (unsafe-vector-ref ds2 k))
-           (unsafe-vector-set!
-            new-ds k
-            (cond [(= dk1 dk2)  dk1]
-                  [(and (= dk1 1) (dk2 . > . 0))  dk2]
-                  [(and (= dk2 1) (dk1 . > . 0))  dk1]
-                  [else  (fail)]))
-           (loop (+ k 1))]
-          [else  new-ds]))) #;#;#;#;
-
 ; <refined-local> shape-persmissive-broadcast is a local function, so adding refinements has no global side-effects.
 ; Refinements are added both in the definition for shape-permissive-broadcase and for the newly made new-ds.
 (: shape-permissive-broadcast (~> ([ds1 : Indexes]
@@ -145,13 +115,22 @@
          (define dims1 (vector-length ds1))
          (define dims2 (vector-length ds2))
          (define n (- dims2 dims1))
-         (let-values ([(ds1 ds2 dims)
-                       (cond [(n . > . 0)  (values (shape-insert-axes ds1 n) ds2 dims2)]
-                             [(n . < . 0)  (values ds1 (shape-insert-axes ds2 (- n)) dims1)]
-                             [else         (values ds1 ds2 dims1)])])
-           (if (eq? broadcasting 'permissive)
-               (shape-permissive-broadcast ds1 ds2 dims fail)
-               (shape-normal-broadcast ds1 ds2 dims fail)))]))
+         (cond [(n . > . 0)
+                (let ([ds1 : (Refine [ds1 : Indexes] (= (len ds1) (len ds2)))
+                           (shape-insert-axes ds1 n)])
+                  (if (eq? broadcasting 'permissive)
+                      (shape-permissive-broadcast ds1 ds2 dims2 fail)
+                      (shape-normal-broadcast ds1 ds2 dims2 fail)))]
+               [(n . < . 0)
+                (let ([ds2 : (Refine [ds2 : Indexes] (= (len ds1) (len ds2)))
+                           (shape-insert-axes ds2 (- n))])
+                  (if (eq? broadcasting 'permissive)
+                      (shape-permissive-broadcast ds1 ds2 dims1 fail)
+                      (shape-normal-broadcast ds1 ds2 dims1 fail)))]
+               [else
+                (if (eq? broadcasting 'permissive)
+                    (shape-permissive-broadcast ds1 ds2 dims1 fail)
+                    (shape-normal-broadcast ds1 ds2 dims1 fail))])]))
 
 (: array-shape-broadcast (case-> ((Listof Indexes) -> Indexes)
                                  ((Listof Indexes) (U #f #t 'permissive) -> Indexes)))

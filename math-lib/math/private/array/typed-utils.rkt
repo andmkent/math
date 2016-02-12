@@ -94,6 +94,22 @@
              (loop (+ i 1) (unsafe-fx+ ji (unsafe-fx* di j)))]
             [else  j])))
 
+  (: safe-value-index->array-index! (~> ([ds : Indexes]
+                                         [j : Nonnegative-Fixnum]
+                                         [js : (Refine [js : Indexes]
+                                                       (<= (len ds) (len js)))])
+                                        Void))
+  (define (safe-value-index->array-index! ds j js)
+    (with-asserts ([j index?])
+      (define dims (vector-length ds))
+      (let: loop : Index ([i : (Refine [i : Nonnegative-Fixnum] (<= i dims)) dims] [s : Nonnegative-Fixnum  1])
+        (cond [(zero? i)  j]
+              [else  (let* ([i  (- i 1)]
+                            [j  (loop i (unsafe-fx* s (safe-vector-ref ds i)))])
+                       (safe-vector-set! js i (fxquotient j s))
+                       (unsafe-fxmodulo j s))]))
+      (void)))
+  
   ; <refined-local> Refinement on i for ds
   (: unsafe-value-index->array-index! (Indexes Nonnegative-Fixnum Indexes -> Void))
   (define (unsafe-value-index->array-index! ds j js)
