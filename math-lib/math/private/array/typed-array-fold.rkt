@@ -5,7 +5,8 @@
          "../unsafe.rkt"
          "array-struct.rkt"
          "array-indexing.rkt"
-         "utils.rkt")
+         "utils.rkt"
+         typed/safe/ops)
 
 (provide (all-defined-out))
 
@@ -25,17 +26,21 @@
 (begin-encourage-inline
   (define (unsafe-array-axis-reduce arr k f)
     (define ds (array-shape arr))
-    (define dk (unsafe-vector-ref ds k))
-    (define new-ds (unsafe-vector-remove ds k))
-    (define proc (unsafe-array-proc arr))
-    (safe-build-array
-     new-ds (λ: ([js : (Refine [v : Indexes] (= (len v) (len new-ds)))])
-              (define old-js (unsafe-vector-insert js k 0))
-              (f dk (λ: ([jk : Index])
-                      ; <nope> old-js build using both unsafe-vector-insert and unsafe-build-array
-                      ; so reasoning about it is difficult.
-                      (unsafe-vector-set! old-js k jk)
-                      (proc old-js)))))))
+    (cond
+      [(< k (vector-length ds))
+       (define dk (safe-vector-ref ds k))
+       (define new-ds (safe-vector-remove ds k))
+       (define proc (unsafe-array-proc arr))
+       (safe-build-array
+        new-ds (λ: ([js : (Refine [v : Indexes] (= (len v) (len new-ds)))])
+                 (define old-js (safe-vector-insert js k 0))
+                 (f dk (λ: ([jk : Index])
+                         ; <nope> old-js build using both unsafe-vector-insert and unsafe-build-array
+                         ; so reasoning about it is difficult.
+                         (safe-vector-set! old-js k jk)
+                         (proc old-js)))))]
+      [else
+       (error 'unsafe-array-axis-reduce "bad index: ~a" k)])))
 
 (: array-axis-reduce (All (A B) ((Array A) Integer (Index (Integer -> A) -> B) -> (Array B))))
 (define (array-axis-reduce arr k f)
