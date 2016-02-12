@@ -94,6 +94,7 @@
              (loop (+ i 1) (unsafe-fx+ ji (unsafe-fx* di j)))]
             [else  j])))
 
+  ;<refined> Safe version of unsafe-value-index->array-index!
   (: safe-value-index->array-index! (~> ([ds : Indexes]
                                          [j : Nonnegative-Fixnum]
                                          [js : (Refine [js : Indexes]

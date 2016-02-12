@@ -149,7 +149,7 @@
              ds (λ: ([js : (Refine [v : Indexes] (= (len v) (len ds)))])
                   (let ([old-js  (old-js)])
                     (define j (safe-array-index->value-index ds js))
-                    (unsafe-value-index->array-index! old-ds j old-js)
+                    (safe-value-index->array-index! old-ds j old-js)
                     (g old-js)))))])))
 
 (: array-flatten (All (A) ((Array A) -> (Array A))))
@@ -168,7 +168,7 @@
            ds (λ: ([js : (Refine [v : Indexes] (= (len v) (len ds)))])
                 (let ([old-js  (old-js)])
                   (define j (safe-vector-ref js 0))
-                  (unsafe-value-index->array-index! old-ds j old-js)
+                  (safe-value-index->array-index! old-ds j old-js)
                   (g old-js)))))]))
 
 ;; ===================================================================================================
