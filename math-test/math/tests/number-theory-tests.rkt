@@ -1,6 +1,6 @@
 #lang typed/racket
 (require math/number-theory)
-(require typed/rackunit)
+(require "t-unit/main.rkt")
 
 ; "quadratic.rkt"
 (check-equal? (quadratic-solutions 1 0 -4) '(-2 2))
@@ -72,7 +72,6 @@
               '(1 -1/2 1/6 0 -1/30 0 1/42 0 -1/30 0 5/66 0 -691/2730 0 7/6 0 -3617/510 0 43867/798))
 
 ; "tangent-number.rkt"
-(require typed/rackunit)
 (check-equal? (map tangent-number '(1 3 5 7 9 11 13)) '(1 2 16 272 7936 353792 22368256))
 (check-equal? (map tangent-number '(0 2 4 6 8 10)) '(0 0 0 0 0 0))
 
