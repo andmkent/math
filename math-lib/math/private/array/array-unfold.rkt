@@ -24,7 +24,9 @@
 (define (unsafe-array-axis-expand arr k dk f)
   (define ds (array-shape arr))
   ;; <nope> can't express relation between array-shape and k in the type
-  (define new-ds (unsafe-vector-insert ds k dk))
+  (define new-ds (if (<= k (vector-length ds))
+                     (safe-vector-insert ds k dk)
+                     (error 'unsafe-array-axis-expand "k > (len ds)")))
   (define proc (unsafe-array-proc arr))
   (unsafe-build-array
    new-ds (λ: ([js : Indexes])
