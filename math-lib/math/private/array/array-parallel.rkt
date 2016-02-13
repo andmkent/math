@@ -15,27 +15,30 @@
 (: eval-array-proc! (All (A) (Indexes (Indexes -> A) Indexes (Vectorof A) Index Index -> Void)))
 (define (eval-array-proc! ds proc js vs start end)
   (define dims (vector-length ds))
-  (unsafe-value-index->array-index! ds start js)
-  (let: k-loop : Nonnegative-Fixnum ([k : Nonnegative-Fixnum  0]
-                                     [j : Nonnegative-Fixnum  start])
-    (cond [(k . < . dims)
-           (if (< k (vector-length js))
-               (let ([dk (safe-vector-ref ds k)])
-                 (let jk-loop : Nonnegative-Fixnum
-                   ([jk : Nonnegative-Fixnum  (safe-vector-ref js k)]
-                    [j : Nonnegative-Fixnum  j])
-                   (cond [(jk . < . dk)
-                          (safe-vector-set! js k jk)
-                          (jk-loop (+ jk 1) (k-loop (+ k 1) j))]
-                         [else
-                          (safe-vector-set! js k 0)
-                          j])))
-               (error 'bad-input-vectors))]
-          [(j . >= . end)  j]
-          [else  (define v (proc js))
-                 (unsafe-vector-set! vs j v)
-                 (unsafe-fx+ j 1)]))
-  (void))
+  (cond
+   [(= dims (vector-length js))
+    (safe-value-index->array-index! ds start js)
+    (let: k-loop : Nonnegative-Fixnum ([k : Nonnegative-Fixnum  0]
+                                       [j : Nonnegative-Fixnum  start])
+          (cond [(k . < . dims)
+                 (if (< k (vector-length js))
+                     (let ([dk (safe-vector-ref ds k)])
+                       (let jk-loop : Nonnegative-Fixnum
+                            ([jk : Nonnegative-Fixnum  (safe-vector-ref js k)]
+                             [j : Nonnegative-Fixnum  j])
+                            (cond [(jk . < . dk)
+                                   (safe-vector-set! js k jk)
+                                   (jk-loop (+ jk 1) (k-loop (+ k 1) j))]
+                                  [else
+                                   (safe-vector-set! js k 0)
+                                   j])))
+                     (error 'bad-input-vectors))]
+                [(j . >= . end)  j]
+                [else  (define v (proc js))
+                       (unsafe-vector-set! vs j v)
+                       (unsafe-fx+ j 1)]))
+    (void)]
+   [else (error 'eval-array-proc! "ds != js")]))
 
 (: parallel-array->mutable-array (All (A) ((Array A) -> (Mutable-Array A))))
 (define (parallel-array->mutable-array arr)
@@ -50,8 +53,8 @@
      (define num-futures (max-math-threads))
      (parameterize ([max-math-threads  1])
        (define jss
-         (for/list: : (Listof Indexes) ([i  (in-range num-futures)])
-           (ann (make-vector dims 0) Indexes)))
+         (for/list: : (Listof (Refine [v : Indexes] (= dims (len v)))) ([i  (in-range num-futures)])
+           (ann (make-vector dims 0) (Refine [v : Indexes] (= dims (len v))))))
        (define: vs : (Vectorof A) (make-vector size (proc (first jss))))
        (define stops
          (for/list: : (Listof Index) ([i  (in-range num-futures)])
