@@ -99,8 +99,10 @@
          (define js (make-thread-local-indexes dims))
          (define proc (unsafe-array-proc arr))
          (array-default-strict
-          (safe-build-array ((inst make-vector Index) 1 m)
-                            (λ: ([ij : (Refine [v : Indexes] (= 1 (len v)))])
+          (safe-build-array ((inst build-vector Index)
+                             2
+                             (λ (i) (list-ref (list 1 m) i)))
+                            (λ: ([ij : (Refine [v : Indexes] (= 2 (len v)))])
                               (let ([js  (js)])
                                 (unsafe-vector-set! js k (safe-vector-ref ij 0))
                                 (proc js)))))]

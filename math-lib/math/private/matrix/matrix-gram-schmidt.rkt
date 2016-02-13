@@ -17,10 +17,15 @@
 (provide matrix-gram-schmidt
          matrix-basis-extension)
 
-(: find-nonzero-vector (case-> ((Vectorof (Vectorof Flonum)) -> (U #f Index))
-                               ((Vectorof (Vectorof Real)) -> (U #f Index))
-                               ((Vectorof (Vectorof Float-Complex)) -> (U #f Index))
-                               ((Vectorof (Vectorof Number)) -> (U #f Index))))
+; <refined-local> Refinement added to find-nonzero-vector for its use in matrix-gram-schmidt/ns
+(: find-nonzero-vector (case-> (~> ([vss : (Vectorof (Vectorof Flonum))])
+                                   (U #f (Refine [i : Index] (< i (len vss)))))
+                               (~> ([vss : (Vectorof (Vectorof Real))])
+                                   (U #f (Refine [i : Index] (< i (len vss)))))
+                               (~> ([vss : (Vectorof (Vectorof Float-Complex))])
+                                   (U #f (Refine [i : Index] (< i (len vss)))))
+                               (~> ([vss : (Vectorof (Vectorof Number))])
+                                   (U #f (Refine [i : Index] (< i (len vss)))))))
 (define (find-nonzero-vector vss)
   (define n (vector-length vss))
   (cond [(= n 0)  #f]
@@ -67,7 +72,7 @@
   (cond [(not (index? start))
          (raise-argument-error 'matrix-gram-schmidt "Index" 2 M normalize? start)]
         [i
-         (define rowi (unsafe-vector-ref rows i))
+         (define rowi (safe-vector-ref rows i))
          (safe-subtract-projections! rows (fxmax start (fx+ i 1)) m rowi)
          (when normalize? (vector-normalize! rowi))
          (let loop ([#{i : Nonnegative-Fixnum} (fx+ i 1)] [bs (list rowi)])
