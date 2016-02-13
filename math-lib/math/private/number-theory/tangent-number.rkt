@@ -29,4 +29,3 @@
                [else (safe-vector-set! T i (+ (safe-vector-ref T i) (safe-vector-ref T (- i 2))))
                      (loop (add1 i))])))
          (safe-vector-ref T 0)]))
-

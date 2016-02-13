@@ -59,6 +59,7 @@
                   [else  old-js]))))))))
 
 (: array-axis-swap (All (A) ((Array A) Integer Integer -> (Array A))))
+#;
 (define (array-axis-swap arr i0 i1)
   (define ds (array-shape arr))
   (define dims (vector-length ds))
@@ -85,6 +86,33 @@
                     (define v (proc js))
                     (safe-vector-set! js i0 j0)
                     (safe-vector-set! js i1 j1)
+                    v)))]))
+
+(define (array-axis-swap arr i0 i1)
+  (define ds (array-shape arr))
+  (define dims (vector-length ds))
+  (cond [(or (i0 . < . 0) (i0 . >= . dims))
+         (raise-argument-error 'array-transpose (format "Index < ~a" dims) 1 arr i0 i1)]
+        [(or (i1 . < . 0) (i1 . >= . dims))
+         (raise-argument-error 'array-transpose (format "Index < ~a" dims) 2 arr i0 i1)]
+        [(= i0 i1)  arr]
+        [else
+         (define new-ds (vector-copy-all ds))
+         (define j0 (unsafe-vector-ref new-ds i0))
+         (define j1 (unsafe-vector-ref new-ds i1))
+         (unsafe-vector-set! new-ds i0 j1)
+         (unsafe-vector-set! new-ds i1 j0)
+         (define proc (unsafe-array-proc arr))
+         (array-default-strict
+          (unsafe-build-array
+           new-ds (λ: ([js : Indexes])
+                    (define j0 (unsafe-vector-ref js i0))
+                    (define j1 (unsafe-vector-ref js i1))
+                    (unsafe-vector-set! js i0 j1)
+                    (unsafe-vector-set! js i1 j0)
+                    (define v (proc js))
+                    (unsafe-vector-set! js i0 j0)
+                    (unsafe-vector-set! js i1 j1)
                     v)))]))
 
 ;; ===================================================================================================
