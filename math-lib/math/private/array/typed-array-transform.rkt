@@ -196,7 +196,10 @@
                 [dss  (map (λ: ([ds : (Refine [v : (Vectorof Index)] (= dims (len v)))]) (safe-vector-remove ds k)) dss)]
                 [ds   (array-shape-broadcast dss)]
                 ;; <nope> Need a stronger type for `array-shape-broadcast` to make this have any hope
-                [dss  (map (λ: ([dk : Index]) (unsafe-vector-insert ds k dk)) dks)])
+                [dss  
+                 (if (<= k (vector-length ds))
+                     (map (λ: ([dk : Index]) (safe-vector-insert ds k dk)) dks)
+                     (error 'array-broadcast-for-append "k > (len ds)"))])
            (define new-arrs
              (map (λ: ([arr : (Array A)] [ds : Indexes]) (array-broadcast arr ds)) arrs dss))
            (values new-arrs dks))]))

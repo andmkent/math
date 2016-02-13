@@ -56,14 +56,6 @@
 (define (sort/key lst lt? key [cache-keys? #f])
   ((inst sort A B) lst lt? #:key key #:cache-keys? cache-keys?))
 
-;; <refined> Safe version of unsafe-vector2d-ref.
-(: safe-vector2d-ref (All (A) (~> ([vec : (Refine [outer : (Vectorof (Refine [inner : (Vectorof A)] (< j (len inner))))] (< i (len outer)))]
-                                   [i : Index]
-                                   [j : Index])
-                                  A)))
-(define (safe-vector2d-ref vss i j)
-  (safe-vector-ref (safe-vector-ref vss i) j))
-
 (: unsafe-vector2d-ref (All (A) ((Vectorof (Vectorof A)) Index Index -> A)))
 (define (unsafe-vector2d-ref vss i j)
   (unsafe-vector-ref (unsafe-vector-ref vss i) j))
@@ -112,49 +104,6 @@
                (if ((magnitude pivot) . > . 0) (values l pivot) (loop (fx+ l 1)))]
               [else
                (values i pivot)]))))
-
-;; <refined> Safe version of elim-rows!
-(: safe-elim-rows!
-   (case-> (~> ([outer : (Refine [outer : (Vectorof (Refine [inner : (Vectorof Flonum)] (< j (len inner))))] (< i (len outer)))]
-                [m : (Refine [m : Index] (= m (len outer)))]
-                [i : Index]
-                [j : Index]
-                [piv : Flonum]
-                [start : Nonnegative-Fixnum])
-               Void)
-           (~> ([outer : (Refine [outer : (Vectorof (Refine [inner : (Vectorof Real)] (< j (len inner))))] (< i (len outer)))]
-                [m : (Refine [m : Index] (= m (len outer)))]
-                [i : Index]
-                [j : Index]
-                [piv : Real]
-                [start : Nonnegative-Fixnum])
-               Void)
-           (~> ([outer : (Refine [outer : (Vectorof (Refine [inner : (Vectorof Float-Complex)] (< j (len inner))))] (< i (len outer)))]
-                [m : (Refine [m : Index] (= m (len outer)))]
-                [i : Index]
-                [j : Index]
-                [piv : Float-Complex]
-                [start : Nonnegative-Fixnum])
-               Void)
-           (~> ([outer : (Refine [outer : (Vectorof (Refine [inner : (Vectorof Number)] (< j (len inner))))] (< i (len outer)))]
-                [m : (Refine [m : Index] (= m (len outer)))]
-                [i : Index]
-                [j : Index]
-                [piv : Number]
-                [start : Nonnegative-Fixnum])
-               Void)))
-(define (safe-elim-rows! rows m i j pivot start)
-  (define row_i (safe-vector-ref rows i))
-  (let loop ([#{l : Nonnegative-Fixnum} start])
-    (when (l . fx< . m)
-      (unless (l . fx= . i)
-        (define row_l (safe-vector-ref rows l))
-        (define x_lj (safe-vector-ref row_l j))
-        (unless (= x_lj 0)
-          (vector-scaled-add! row_l row_i (* -1 (/ x_lj pivot)) j)
-          (safe-vector-set! row_l j (- x_lj x_lj))))
-      (loop (fx+ l 1)))))
-
 
 (: elim-rows!
    (case-> ((Vectorof (Vectorof Flonum)) Index Index Index Flonum Nonnegative-Fixnum -> Void)
