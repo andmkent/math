@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require racket/fixnum
+         typed/safe/ops
          "array-struct.rkt"
          "array-pointwise.rkt"
          "array-fold.rkt"
@@ -26,10 +27,14 @@
   (define proc (unsafe-array-proc arr))
   (unsafe-build-array
    new-ds (λ: ([js : Indexes])
-            ; <nope> Requires a change in the type of unsafe-build array, which requires
-            ; structs to cooperate.
-            (define jk (unsafe-vector-ref js k))
-            (f (proc (unsafe-vector-remove js k)) jk))))
+            (cond [(< k (vector-length js))
+                   ;; <nope> Requires a change in the type of unsafe-build array, which requires
+                   ;; structs to cooperate.
+                   (define jk (safe-vector-ref js k))
+                   (f (proc (safe-vector-remove js k)) jk)]
+                  [else
+                   (error 'unsafe-array-axis-expand "k too small for js")]))))
+
 
 (: array-axis-expand (All (A B) ((Array A) Integer Integer (A Index -> B) -> (Array B))))
 (define (array-axis-expand arr k dk f)
