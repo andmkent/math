@@ -44,7 +44,9 @@
            ([(x)  (proc js)])
            #true
            #true
-           [(begin (safe-next-indexes! ds dims js)
+           [(begin (if (= dims (vector-length ds) (vector-length js))
+                       (safe-next-indexes! ds dims js)
+                       (error 'next-indexes "failure"))
                    (unsafe-fx+ j 1))])])]
       [[_ clause] (raise-syntax-error 'in-array "expected (in-array <Array>)" #'clause #'clause)])))
 
@@ -74,7 +76,9 @@
            ([(x)  (vector-copy-all js)])
            #true
            #true
-           [(begin (safe-next-indexes! ds dims js)
+           [(begin (if (= dims (vector-length ds) (vector-length js))
+                       (safe-next-indexes! ds dims js)
+                       (error 'next-indexes "failure"))
                    (unsafe-fx+ j 1))])])]
       [[_ clause]
        (raise-syntax-error 'in-array-indexes "expected (in-array-indexes <Indexes>)"
@@ -103,7 +107,9 @@
            ([(x)  js])
            #true
            #true
-           [(begin (safe-next-indexes! ds dims js)
+           [(begin (if (= dims (vector-length ds) (vector-length js))
+                       (safe-next-indexes! ds dims js)
+                       (error 'next-indexes "failure"))
                    (unsafe-fx+ j 1))])])]
       [[_ clause]
        (raise-syntax-error 'in-array-indexes "expected (in-unsafe-array-indexes <Indexes>)"
