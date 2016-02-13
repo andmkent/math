@@ -13,7 +13,8 @@
          ; Implementation note:
          ;   See "Concrete Mathematics" p 287 for the method
          ;; <refined-local> Refinement added to T for simple vector operations
-         (define T : (Refine [T : (Vectorof Natural)] (= (+ n 2) (len T))) (make-vector (+ n 2) 0))
+         (define T : (Refine [T : (Vectorof Natural)] (= (+ n 2) (len T)))
+           (make-vector (+ n 2) 0))
          ; T[x]=x
          (safe-vector-set! T 1 1)
          ;; <refined-local> Refinements added to k & i.
@@ -23,9 +24,9 @@
              (safe-vector-set! T i (* (add1 i) (safe-vector-ref T (add1 i)))))
            (safe-vector-set! T k 0)
            ; multiply T[x] with 1+x^2
-           (let loop ([i : (Refine [i : Natural] (<= 2 i (+ k 2))) 2])
-             (cond
-               [(>= i (+ k 2)) (void)]
-               [else (safe-vector-set! T i (+ (safe-vector-ref T i) (safe-vector-ref T (- i 2))))
-                     (loop (add1 i))])))
+           (let loop ([i : (Refine [n : Integer] (<= n (+ k 1))) (+ k 1)])
+             (when (> i 1)
+               (safe-vector-set! T i (+ (safe-vector-ref T i)
+                                        (safe-vector-ref T (- i 2))))
+               (loop (- i 1)))))
          (safe-vector-ref T 0)]))
