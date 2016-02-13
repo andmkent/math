@@ -44,7 +44,7 @@
            ([(x)  (proc js)])
            #true
            #true
-           [(begin (next-indexes! ds dims js)
+           [(begin (safe-next-indexes! ds dims js)
                    (unsafe-fx+ j 1))])])]
       [[_ clause] (raise-syntax-error 'in-array "expected (in-array <Array>)" #'clause #'clause)])))
 

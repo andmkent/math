@@ -27,6 +27,7 @@
   (define (unsafe-array-axis-reduce arr k f)
     (define ds (array-shape arr))
     (cond
+      ; need this cond because `array-shape` is hard to reason about
       [(< k (vector-length ds))
        (define dk (safe-vector-ref ds k))
        (define new-ds (safe-vector-remove ds k))
@@ -35,8 +36,6 @@
         new-ds (λ: ([js : (Refine [v : Indexes] (= (len v) (len new-ds)))])
                  (define old-js (safe-vector-insert js k 0))
                  (f dk (λ: ([jk : Index])
-                         ; <nope> old-js build using both unsafe-vector-insert and unsafe-build-array
-                         ; so reasoning about it is difficult.
                          (safe-vector-set! old-js k jk)
                          (proc old-js)))))]
       [else
