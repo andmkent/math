@@ -149,45 +149,24 @@
                  [else  (raise-index-error)])]
           [else  j])))
 
-;; <refined> Safe version check-array-indexes
-(: safe-check-array-indexes (~> ([name : Symbol]
-                                 [ds : Indexes]
-                                 [js : (Refine [js : In-Indexes]
-                                               (= (len ds) (len js)))])
-                                Indexes))
-(define (safe-check-array-indexes name ds js)
-  (define (raise-index-error) (raise-array-index-error name ds js))
-  (define dims (vector-length ds))
-  (unless (= dims (vector-length js)) (raise-index-error))
-  (define new-js : (Refine [new-js : Indexes]
-                           (= dims (len new-js))) (make-vector dims 0))
-  (let loop ([#{i : Nonnegative-Fixnum} 0])
-    (cond [(i . < . dims)
-           (define di (safe-vector-ref ds i))
-           (define ji (safe-vector-ref js i))
-           (cond [(and (exact-integer? ji) (0 . <= . ji) (ji . < . di))
-                  (safe-vector-set! new-js i ji)
-                  (loop (+ i 1))]
-                 [else  (raise-index-error)])]
-          [else  new-js])))
-
-; <refined-local> Refinement added for new-js.
 (: check-array-indexes (Symbol Indexes In-Indexes -> Indexes))
 (define (check-array-indexes name ds js)
   (define (raise-index-error) (raise-array-index-error name ds js))
   (define dims (vector-length ds))
-  (unless (= dims (vector-length js)) (raise-index-error))
-  (define new-js : (Refine [new-js : Indexes]
-                           (= dims (len new-js))) (make-vector dims 0))
-  (let loop ([#{i : Nonnegative-Fixnum} 0])
-    (cond [(i . < . dims)
-           (define di (safe-vector-ref ds i))
-           (define ji (unsafe-vector-ref js i))
-           (cond [(and (exact-integer? ji) (0 . <= . ji) (ji . < . di))
-                  (unsafe-vector-set! new-js i ji)
-                  (loop (+ i 1))]
-                 [else  (raise-index-error)])]
-          [else  new-js])))
+  (cond 
+   [(= dims (vector-length js))
+    (define new-js : (Refine [new-js : Indexes]
+                             (= dims (len new-js))) (make-vector dims 0))
+    (let loop ([#{i : Nonnegative-Fixnum} 0])
+      (cond [(i . < . dims)
+             (define di (safe-vector-ref ds i))
+             (define ji (safe-vector-ref js i))
+             (cond [(and (exact-integer? ji) (0 . <= . ji) (ji . < . di))
+                    (safe-vector-set! new-js i ji)
+                    (loop (+ i 1))]
+                   [else  (raise-index-error)])]
+            [else  new-js]))]
+   [else  (raise-index-error)]))
 
 ; <refined> Safe version of vector-remove
 (: safe-vector-remove (All (I) (~> ([vec : (Vectorof I)]
