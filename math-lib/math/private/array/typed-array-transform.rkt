@@ -184,16 +184,18 @@
         [(or (k . < . 0) (k . >= . dims))
          (raise-argument-error 'array-append* (format "Index < ~a" dims) k)]
         [else
-         (let* ([dss  (map (λ: ([ds : Indexes])
+         (let* ([dss  (map (λ: ([ds : Indexes]) : (Refine [v : (Vectorof Index)] (= dims (len v)))
                              (define dms (vector-length ds))
-                             (vector-append ((inst make-vector Index) (- dims dms) 1) ds))
+                             ;; added some intermediate variables and annotations to help the type checker, but no code change
+                             (define start (ann ((inst make-vector Index) (- dims dms) 1)
+                                                 (Refine [v : Indexes] (= (+ dims (* -1 dms)) (len v)))))
+                             (define end (ann ds (Refine [v : (Vectorof Index)] (= dms (len v)))))
+                             (vector-append start end))
                            dss)]
-                ; <nope> Requires us to be able to reason about our input vector, ds,
-                ; and to be able to change the input type of array-append*, which
-                ; is outward facing.
-                [dks  (map (λ: ([ds : Indexes]) (unsafe-vector-ref ds k)) dss)]
-                [dss  (map (λ: ([ds : Indexes]) (unsafe-vector-remove ds k)) dss)]
+                [dks  (map (λ: ([ds : (Refine [v : (Vectorof Index)] (= dims (len v)))]) (safe-vector-ref ds k)) dss)]
+                [dss  (map (λ: ([ds : (Refine [v : (Vectorof Index)] (= dims (len v)))]) (safe-vector-remove ds k)) dss)]
                 [ds   (array-shape-broadcast dss)]
+                ;; <nope> Need a stronger type for `array-shape-broadcast` to make this have any hope
                 [dss  (map (λ: ([dk : Index]) (unsafe-vector-insert ds k dk)) dks)])
            (define new-arrs
              (map (λ: ([arr : (Array A)] [ds : Indexes]) (array-broadcast arr ds)) arrs dss))
