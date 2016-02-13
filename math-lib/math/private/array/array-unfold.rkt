@@ -23,12 +23,14 @@
 (: unsafe-array-axis-expand (All (A B) ((Array A) Index Index (A Index -> B) -> (Array B))))
 (define (unsafe-array-axis-expand arr k dk f)
   (define ds (array-shape arr))
+  ;; <nope> can't express relation between array-shape and k in the type
   (define new-ds (unsafe-vector-insert ds k dk))
   (define proc (unsafe-array-proc arr))
   (unsafe-build-array
    new-ds (λ: ([js : Indexes])
             (cond [(< k (vector-length js))
-                   ;; <nope> Requires a change in the type of unsafe-build array, which requires
+                   ;; <need dynamic check> Requires a change in the
+                   ;; type of unsafe-build array, which requires
                    ;; structs to cooperate.
                    (define jk (safe-vector-ref js k))
                    (f (proc (safe-vector-remove js k)) jk)]
