@@ -74,7 +74,7 @@
            ([(x)  (vector-copy-all js)])
            #true
            #true
-           [(begin (next-indexes! ds dims js)
+           [(begin (safe-next-indexes! ds dims js)
                    (unsafe-fx+ j 1))])])]
       [[_ clause]
        (raise-syntax-error 'in-array-indexes "expected (in-array-indexes <Indexes>)"
@@ -103,7 +103,7 @@
            ([(x)  js])
            #true
            #true
-           [(begin (next-indexes! ds dims js)
+           [(begin (safe-next-indexes! ds dims js)
                    (unsafe-fx+ j 1))])])]
       [[_ clause]
        (raise-syntax-error 'in-array-indexes "expected (in-unsafe-array-indexes <Indexes>)"
