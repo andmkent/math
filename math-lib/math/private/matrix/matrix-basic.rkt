@@ -107,7 +107,7 @@
          (array-default-strict
           (safe-build-array
            (ann (build-vector 2 (λ ([i : Index]) : Index
-                                  (list-ref (list 1 m) i)))
+                                  (list-ref (list m 1) i)))
                 (Refine [v : (Vectorof Index)] (= 2 (len v))))
            (λ: ([ij : (Refine [v : Indexes] (= (len v) 2))])
              (safe-vector-set! ij 1 j)

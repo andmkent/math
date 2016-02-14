@@ -101,7 +101,7 @@
          (array-default-strict
           (safe-build-array ((inst build-vector Index)
                              2
-                             (λ (i) (list-ref (list 1 m) i)))
+                             (λ (i) (list-ref (list m 1) i)))
                             (λ: ([ij : (Refine [v : Indexes] (= 2 (len v)))])
                               (let ([js  (js)])
                                 (unsafe-vector-set! js k (safe-vector-ref ij 0))
@@ -120,7 +120,8 @@
   (cond [(list? xs)  (array-axis-swap (list->col-matrix xs) 0 1)]
         [(vector? xs)  (array-axis-swap (vector->col-matrix xs) 0 1)]
         [(row-matrix? xs)  xs]
-        [else  (array-axis-swap (array->col-matrix xs) 0 1)]))
+        [else
+         (array-axis-swap (array->col-matrix xs) 0 1)]))
 
 ;; ===================================================================================================
 ;; Nested conversion
